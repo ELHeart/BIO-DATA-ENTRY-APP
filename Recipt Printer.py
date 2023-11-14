@@ -17,8 +17,8 @@ print("***********************************************************")
 print("Enter 1 to begin bio-data entry or 0 to cancel.")
 entry = int(input())
 
-# Consent entry correction point and re-entry
-while entry > 1:
+# Consent entry correction and re-entry point
+while entry != 1 and entry != 0:
     print(" Invalid input!!! Enter 1 or 0")
     entry = int(input())
 print(" ")
