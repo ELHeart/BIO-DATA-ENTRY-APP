@@ -1,14 +1,17 @@
 # BIO-CAP is a python based Bio-data collection application currently under development.
 # in this repository you will find detailed information about this application in the README file attached.
 # Kindly assist with any errors or bugs you may find in the program.
+
 print(" ")
 print(" ")
+
 # Introduction to the software.
 print("***********************************************************")
 print("Hello and Welcome to BIO-CAP. A Bio-data Entry Application.")
 print("Kindly follow the instructions ad contact the System administrator if you need help")
 print("***********************************************************")
 print(" ")
+
 # User consent
 print("***********************************************************")
 print("Enter 1 to begin bio-data entry or 0 to cancel.")
@@ -20,6 +23,7 @@ while entry > 1:
     entry = int(input())
 print(" ")
 print("***********************************************************")
+
 # Bio-data Input begins if consent is given.
 if entry == 1:
     print(" ")
