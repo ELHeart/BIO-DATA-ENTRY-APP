@@ -2,29 +2,26 @@
 # in this repository you will find detailed information about this application in the README file attached.
 # Kindly assist with any errors or bugs you may find in the program.
 
+# This Function defines the data input and display.
 def data_entry():
-    # Introduction to the software.
-    print("***********************************************************")
-    print("Hello and Welcome to BIO-CAP. A Bio-data Entry Application.")
-    print("Kindly follow all instructions carefully.")
-    print("Contact the System administrator if you encounter any issues.")
-    print("***********************************************************")
-
     # User consent
     print("***********************************************************")
-    print("Enter 1 to begin bio-data entry or 0 to cancel.")
+    print("***  ENTER 1 TO BEGIN ENTRY OR 0 TO CANCEL   ***")
     entry = int(input())
 
     # Consent entry correction and re-entry point
     while entry != 1 and entry != 0:
-        print(" Invalid input!!! Enter 1 or 0")
+        print("***  INVALID INPUT   ***")
+        print("***  ENTER 1 OR 0    ***")
         entry = int(input())
     print("***********************************************************")
+    print(" ")
 
     # Data Entry
     if entry == 1:
-        print("Bio-data entry begins")
+        print("***  BEGIN BIO-DATA ENTRY    ***")
         print("*******************************************")
+        print(" ")
         print("Enter your First Name: ")
         first_name = str(input())
         print("Enter your Middle Name(Skip if none): ")
@@ -33,59 +30,74 @@ def data_entry():
         last_name = str(input())
         print("Enter your Age: ")
         age = int(input())
-        print("End of Bio-data Entry")
+        print(" ")
+        print("***  END OF BIO-DATA ENTRY   ***")
 
         # Data Display
         print("*******************************************")
-        print("Entry Details")
+        print(" ")
+        print("***  ENTRY DETAILS   ***")
         print("*******************************************")
-        print("Full Name: ", (first_name + " " + mid_name + " " + last_name))
-        print("Age: ", age)
-        print("*******************************************")
+        print(" ")
+        print("FULL NAME: ", (first_name + " " + mid_name + " " + last_name))
+        print("AGE: ", age)
+        print(" ")
+        print("***  END ***")
+        # New data entry point
+        new_data_entry()
 
         # Statement breaks program when user cancels
     elif entry == 0:
-        print("Bio-data entry was cancelled by the user!")
-        print("Thank You")
+        print("***  ENTRY CANCELLED BY USER ***")
+        print("***  APPLICATION DISABLED ***")
 
+
+# This Function defines the code for new data entry.
+def new_data_entry():
     # New Data Input Point
-    print("***********************************************************")
     print(" ")
     print("***********************************************************")
-    print("Submit new bio-data form? Enter 1 to begin and 0 to exit")
-    print("***********************************************************")
+    print("***  NEW ENTRY ***")
+    print("***  ENTER 1 TO BEGIN OR 0 TO CANCEL")
     new_data = int(input())
 
     # New data consent correction and re-entry point
     while new_data != 1 and new_data != 0:
-        print(" Invalid input!!! Enter 1 or 0")
+        print("***  INVALID INPUT   ***")
+        print("***  ENTER 1 OR 0    ***")
         new_data = int(input())
     if new_data == 1:
         data_entry()
 
     # Application exits here.
     elif new_data == 0:
-        print("Application exit successfully!!!")
-        print("Thank you for using BIO-CAP!")
-        print("***********************************************************")
-        print("***APPLICATION DISABLED***")
+        print("***  ENTRY CANCELLED BY USER ***")
+        print("***  APPLICATION DISABLED ***")
 
 
 # MAIN PROGRAM CODES AFTER FUNCTION DECLARATION
-# Starter Entry
+# Program Activation code validation point
 print(" ")
-print("***ENTER 1 TO START APPLICATION OR 0 TO EXIT***")
+print("***  ENTER 1 TO START APPLICATION OR 0 TO EXIT   ***")
 start = int(input())
 
 # START entry correction and re-entry
 while start != 1 and start != 0:
-    print(" Invalid input!!! Enter 1 or 0")
+    print("***  INVALID INPUT   ***")
+    print("***  ENTER 1 OR 0    ***")
     start = int(input())
 
-# Bio-data Input begins if START is 1.
+# Application begins if START is 1.
 if start == 1:
+    print("***********************************************************")
+    print("***  WELCOME TO BIO-CAP  ***")
+    print("***  KINDLY FOLLOW ALL INSTRUCTIONS CAREFULLY    ***")
+    print("***  CONTACT SYSTEM ADMIN IF ANY ISSUES ARISE    ***")
+    print("***********************************************************")
+    print(" ")
+# Data entry point
     data_entry()
 
-# Application close if START is 0
+# Application is disabled if START is 0
 elif start == 0:
-    print("***APPLICATION DISABLED***")
+    print("***  APPLICATION DISABLED    ***")
