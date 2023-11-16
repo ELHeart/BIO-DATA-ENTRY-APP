@@ -67,12 +67,40 @@ def new_data_entry():
         print("***  ENTER 1 OR 0    ***")
         new_data = int(input())
     if new_data == 1:
-        data_entry()
+        data_entry2()
 
     # Application exits here.
     elif new_data == 0:
         print("***  ENTRY CANCELLED BY USER ***")
         print("***  APPLICATION DISABLED ***")
+
+
+def data_entry2():
+    print("***  BEGIN BIO-DATA ENTRY    ***")
+    print("*******************************************")
+    print(" ")
+    print("Enter your First Name: ")
+    first_name = str(input())
+    print("Enter your Middle Name(Skip if none): ")
+    mid_name = str(input())
+    print("Enter your Last Name: ")
+    last_name = str(input())
+    print("Enter your Age: ")
+    age = int(input())
+    print(" ")
+    print("***  END OF BIO-DATA ENTRY   ***")
+    # Data Display
+    print("*******************************************")
+    print(" ")
+    print("***  ENTRY DETAILS   ***")
+    print("*******************************************")
+    print(" ")
+    print("FULL NAME: ", (first_name + " " + mid_name + " " + last_name))
+    print("AGE: ", age)
+    print(" ")
+    print("***  END ***")
+    # New data entry point
+    new_data_entry()
 
 
 # MAIN PROGRAM CODES AFTER FUNCTION DECLARATION
