@@ -89,7 +89,8 @@ def data_entry2():
     age = int(input())
     print(" ")
     print("***  END OF BIO-DATA ENTRY   ***")
-    # Data Display
+
+# Data Display
     print("*******************************************")
     print(" ")
     print("***  ENTRY DETAILS   ***")
@@ -99,7 +100,8 @@ def data_entry2():
     print("AGE: ", age)
     print(" ")
     print("***  END ***")
-    # New data entry point
+
+# New data entry point
     new_data_entry()
 
 
@@ -123,6 +125,7 @@ if start == 1:
     print("***  CONTACT SYSTEM ADMIN IF ANY ISSUES ARISE    ***")
     print("***********************************************************")
     print(" ")
+
 # Data entry point
     data_entry()
 
