@@ -22,24 +22,24 @@ def data_entry():
         print("***  BEGIN BIO-DATA ENTRY    ***")
         print("*******************************************")
         print(" ")
-        print("Enter your First Name: ")
-        first_name = str(input())
-        print("Enter your Middle Name(Skip if none): ")
-        mid_name = str(input())
-        print("Enter your Last Name: ")
-        last_name = str(input())
-        print("Enter your Age: ")
-        age = int(input())
+
+        print("Enter the following information")
+        first_name = input("First Name: ")
+        mid_name = input("Middle Name(Skip if none): ")
+        last_name = input("Last name: ")
+        age = int(input("Age: "))
         print(" ")
         print("***  END OF BIO-DATA ENTRY   ***")
+        print(" ")
 
         # Data Display
         print("*******************************************")
-        print(" ")
         print("***  ENTRY DETAILS   ***")
         print("*******************************************")
         print(" ")
-        print("FULL NAME: ", (first_name + " " + mid_name + " " + last_name))
+        print("First Name:", first_name)
+        print("Middle Name:", mid_name)
+        print("Last Name:", last_name)
         print("AGE: ", age)
         print(" ")
         print("***  END ***")
@@ -76,32 +76,33 @@ def new_data_entry():
 
 
 def data_entry2():
+    print("*******************************************")
     print("***  BEGIN BIO-DATA ENTRY    ***")
     print("*******************************************")
     print(" ")
-    print("Enter your First Name: ")
-    first_name = str(input())
-    print("Enter your Middle Name(Skip if none): ")
-    mid_name = str(input())
-    print("Enter your Last Name: ")
-    last_name = str(input())
-    print("Enter your Age: ")
-    age = int(input())
+
+    # Data Entry
+    print("Enter the following information")
+    first_name = input("First Name: ")
+    mid_name = input("Middle Name(Skip if none): ")
+    last_name = input("Last name: ")
+    age = int(input("Age: "))
     print(" ")
     print("***  END OF BIO-DATA ENTRY   ***")
-
-# Data Display
-    print("*******************************************")
     print(" ")
+
+    # Data Display
+    print("*******************************************")
     print("***  ENTRY DETAILS   ***")
     print("*******************************************")
     print(" ")
-    print("FULL NAME: ", (first_name + " " + mid_name + " " + last_name))
+    print("First Name:", first_name)
+    print("Middle Name:", mid_name)
+    print("Last Name:", last_name)
     print("AGE: ", age)
     print(" ")
     print("***  END ***")
-
-# New data entry point
+    # New data entry point
     new_data_entry()
 
 
