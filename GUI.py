@@ -61,7 +61,7 @@ class BioDataApp(QWidget):
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO BioData (FirstName, MiddleName, LastName, Age)
+            INSERT INTO BIO_DATA (FirstName, MiddleName, LastName, Age)
             VALUES (?, ?, ?, ?)
         ''', (self.firstName.text(), self.middleName.text(), self.lastName.text(), age))
         conn.commit()
