@@ -1,3 +1,1 @@
-# BIO-DATA-ENTRY-APP
-
-The Bio-data collection app I am developing will be used as a background framework for future registration and information collection applications.
+README file for test 1 of the BIO-CAP bio-data capture storage and retrival. The current repository has the base application code that was run in with GPT-4 to develop the base GUI application.ie GUI.py.
