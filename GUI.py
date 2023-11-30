@@ -1,20 +1,47 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog, \
+    QHBoxLayout
+
 import pyodbc
 
 
 # noinspection PyUnresolvedReferences
+class ConfirmDialog(QDialog):
+    def __init__(self, parent, first_name, middle_name, last_name, age):
+        super().__init__(parent)
+        self.setWindowTitle('Confirm Data')
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel(f"First Name: {first_name}"))
+        layout.addWidget(QLabel(f"Middle Name: {middle_name}"))
+        layout.addWidget(QLabel(f"Last Name: {last_name}"))
+        layout.addWidget(QLabel(f"Age: {age}"))
+
+        button_layout = QHBoxLayout()
+        self.confirm_button = QPushButton("Confirm")
+        self.confirm_button.clicked.connect(self.accept)
+        button_layout.addWidget(self.confirm_button)
+
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(self.reject)
+        button_layout.addWidget(self.edit_button)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+
 class BioDataApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Bio-Data Collection Application')  # Set window title
+        self.setWindowTitle('Bio-Data Collection Application')
 
         layout = QVBoxLayout()
 
         self.firstName = QLineEdit()
-        self.firstName.setPlaceholderText("Enter first name")  # Set placeholder text
+        self.firstName.setPlaceholderText("Enter first name")
         self.middleName = QLineEdit()
         self.middleName.setPlaceholderText("Enter middle name (Skip if none)")
         self.lastName = QLineEdit()
@@ -32,22 +59,26 @@ class BioDataApp(QWidget):
         layout.addWidget(self.age)
 
         submitButton = QPushButton("Submit")
-        submitButton.clicked.connect(self.submitData)  # PyCharm might show a warning here, but it's safe to ignore
+        # noinspection PyUnresolvedReferences
+        submitButton.clicked.connect(self.showConfirmDialog)
         layout.addWidget(submitButton)
 
         self.setLayout(layout)
 
-    def submitData(self):
+    def showConfirmDialog(self):
         # Check if age input is an integer
         try:
             age = int(self.age.text())
         except ValueError:
-            msgBox = QMessageBox()
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setText("Invalid input for age. Please enter an integer.")
-            msgBox.exec_()
+            QMessageBox.warning(self, "Invalid Input", "Invalid input for age. Please enter an integer.")
             return
 
+        dialog = ConfirmDialog(self, self.firstName.text(), self.middleName.text(), self.lastName.text(), age)
+        if dialog.exec_():
+            self.submitData()
+
+    def submitData(self):
+        age = int(self.age.text())
         print("First Name:", self.firstName.text())
         print("Middle Name:", self.middleName.text())
         print("Last Name:", self.lastName.text())
@@ -56,22 +87,20 @@ class BioDataApp(QWidget):
         # Connect to the MS Access database and insert the data
         conn_str = (
             r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO_DATA.accdb;'  # replace with the path to your database
+            r'DBQ=C:\Users\el_he\Desktop\BIO_DATA.accdb;'
         )
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO BIO_DATA (FirstName, MiddleName, LastName, Age)
-            VALUES (?, ?, ?, ?)
-        ''', (self.firstName.text(), self.middleName.text(), self.lastName.text(), age))
+                   INSERT INTO BIO_DATA (FirstName, MiddleName, LastName, Age)
+                   VALUES (?, ?, ?, ?)
+               ''', (self.firstName.text(), self.middleName.text(), self.lastName.text(), age))
         conn.commit()
         conn.close()
+        # ... (database code remains the same)
 
-        # Show a message box when data is submitted
-        msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Information)
-        msgBox.setText("Data submitted successfully!")
-        msgBox.exec_()
+        # Show a SUCCESS message box when data is submitted
+        QMessageBox.information(self, "Success", "Data submitted successfully!")
 
         # Clear the form fields for a new entry
         self.firstName.clear()
