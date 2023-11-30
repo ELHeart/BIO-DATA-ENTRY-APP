@@ -29,6 +29,10 @@ class SignUpDialog(QDialog):
         signup_button.clicked.connect(self.register_user)
         layout.addWidget(signup_button)
 
+        # Button to switch to the Sign In window
+        signin_button = QPushButton("Sign In")
+        signin_button.clicked.connect(self.switch_to_signin)
+        layout.addWidget(signin_button)
 
         self.setLayout(layout)
 
@@ -42,7 +46,7 @@ class SignUpDialog(QDialog):
         # Connect to the MS Access database to insert new user
         conn_str = (
             r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-SIGN-UP.accdb;'  # Update the path to your database
+            r'DBQ=path_to_your_database.accdb;'  # Update the path to your database
         )
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
@@ -52,6 +56,9 @@ class SignUpDialog(QDialog):
 
         QMessageBox.information(self, "Success", "You have signed up successfully!")
         self.accept()
+
+    def switch_to_signin(self):
+        self.done(0)  # Close the sign-up dialog with a rejection code
 
 
 # Login Dialog Class
@@ -106,6 +113,8 @@ class LoginDialog(QDialog):
             self.password.clear()
 
 
+# ... (same as before) ...
+
 # ConfirmDialog Class
 class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
@@ -130,11 +139,11 @@ class ConfirmDialog(QDialog):
 
         layout.addLayout(button_layout)
         self.setLayout(layout)
-
-    # ... (same as before) ...
-
+# ... (same as before) ...
 
 # BioDataApp Class
+
+
 class BioDataApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -213,7 +222,7 @@ class BioDataApp(QWidget):
         self.lastName.clear()
         self.age.clear()
 
-    # ... (same as before) ...
+# ... (same as before) ...
 
 
 if __name__ == '__main__':
@@ -221,8 +230,10 @@ if __name__ == '__main__':
 
     # Show the sign-up dialog first
     signup = SignUpDialog()
-    if signup.exec_() == QDialog.Accepted:
-        # After successful sign-up, show the login dialog
+    result = signup.exec_()
+
+    # If the user closes the sign-up dialog or clicks "Sign In", show the login dialog
+    if result == QDialog.Rejected:
         login = LoginDialog()
         if login.exec_() == QDialog.Accepted:
             ex = BioDataApp()
