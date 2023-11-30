@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog,
     QHBoxLayout, QFormLayout
 )
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 import hashlib
 import gspread
@@ -52,6 +53,7 @@ class SignUpDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Sign Up')  # Dialog box title
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setModal(True)
 
         layout = QVBoxLayout()
@@ -84,6 +86,7 @@ class SignUpDialog(QDialog):
 
     def initUI(self):
         self.setWindowTitle('Sign Up')
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setModal(True)
         self.setStyleSheet("QDialog { background-color: #f2f2f2; } QPushButton { background-color:"
                            " #4CAF50; color: white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
@@ -137,6 +140,7 @@ class LoginDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Login')
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setModal(True)
 
         layout = QVBoxLayout()
@@ -179,6 +183,7 @@ class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
         super().__init__(parent)
         self.setWindowTitle('Confirm Data')
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
 
         layout = QVBoxLayout()
 
@@ -201,10 +206,13 @@ class ConfirmDialog(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-        try:
-            sheet.append_row([first_name, middle_name, last_name, age])
-        except Exception as e:
-            print("An error occurred:", e)
+        # Get the 'sheet' object by calling the 'init_google_sheets1' function
+        sheet = init_google_sheets1()
+        if sheet:  # Check if 'sheet' is not None
+            try:
+                sheet.append_row([first_name, middle_name, last_name, age])
+            except Exception as e:
+                print("An error occurred:", e)
 
 
 # BioDataApp Class
@@ -216,6 +224,7 @@ class BioDataApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Bio-Data Collection Application')
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setStyleSheet("QWidget { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color:"
                            " white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
 
