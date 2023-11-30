@@ -78,7 +78,6 @@ class SignUpDialog(QDialog):
 
     def switch_to_signin(self):
         self.done(0)  # Close the sign-up dialog with a rejection code 0
-    # ... (rest of the SignUpDialog code remains unchanged) ...
 
     def register_user(self):
         username = self.username.text()
@@ -121,7 +120,6 @@ class LoginDialog(QDialog):
 
         self.setLayout(layout)
 
-    # ... (rest of the LoginDialog code remains unchanged) ...
 
     def check_credentials(self):
         username = self.username.text()
@@ -164,7 +162,6 @@ class ConfirmDialog(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-# ... (ConfirmDialog code remains unchanged) ...
         try:
             sheet.append_row([first_name, middle_name, last_name, age])
         except Exception as e:
@@ -221,7 +218,6 @@ class BioDataApp(QWidget):
         if dialog.exec_():
             self.submitData()
 
-    # ... (rest of the BioDataApp code remains unchanged) ...
 
     def submitData(self):
         age = int(self.age.text())
@@ -241,8 +237,6 @@ class BioDataApp(QWidget):
         self.middleName.clear()
         self.lastName.clear()
         self.age.clear()
-
-# ... (rest of your application code) ...
 
 
 if __name__ == '__main__':

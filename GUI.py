@@ -1,7 +1,50 @@
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog,
-                             QHBoxLayout)
-import pyodbc
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog,
+    QHBoxLayout, QFormLayout
+)
+from PyQt5.QtCore import Qt
 import hashlib
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# ... [The rest of the functions remain unchanged] ...
+# Function to initialize the Google Sheets connection
+
+
+def init_google_sheets():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = (ServiceAccountCredentials.from_json_keyfile_name
+             (r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope))
+    # Update the path to your downloaded credentials
+    client = gspread.authorize(creds)
+    sheet = client.open('Credentials').sheet1  # Update with your Google Sheet name
+    return sheet
+
+
+def init_google_sheets1():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = (ServiceAccountCredentials.from_json_keyfile_name
+             (r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope))
+    # Update the path to your downloaded credentials
+    client = gspread.authorize(creds)
+    sheet = client.open('Bio-Data').sheet1  # Update with your Google Sheet name
+    return sheet
+
+
+# Function to find a user in the Google Sheet
+def find_user(username, hashed_password):
+    sheet = init_google_sheets()
+    users = sheet.get_all_records()
+    for user in users:
+        if user['Username'] == username and user['PasswordHash'] == hashed_password:
+            return True
+    return False
+
+
+# Function to add a new user to the Google Sheet
+def add_user(username, hashed_password):
+    sheet = init_google_sheets()
+    sheet.append_row([username, hashed_password])
 
 
 # SignUpDialog class creates a sign-up dialog box
@@ -37,34 +80,58 @@ class SignUpDialog(QDialog):
 
         self.setLayout(layout)
 
-    # Function for user sign-up information storage
+    # ... [The rest of the SignUpDialog class remains unchanged] ...
+
+    def initUI(self):
+        self.setWindowTitle('Sign Up')
+        self.setModal(True)
+        self.setStyleSheet("QDialog { background-color: #f2f2f2; } QPushButton { background-color:"
+                           " #4CAF50; color: white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
+
+        form_layout = QFormLayout()
+
+        # Username and password entry points.
+        self.username = QLineEdit()
+        self.username.setPlaceholderText("Enter username")
+        self.password = QLineEdit()
+        self.password.setPlaceholderText("Enter password")
+        self.password.setEchoMode(QLineEdit.Password)
+
+        form_layout.addRow("Username:", self.username)
+        form_layout.addRow("Password:", self.password)
+
+        # Sign up and Sign in buttons
+        buttons_layout = QHBoxLayout()
+        signup_button = QPushButton("Sign Up")
+        signup_button.clicked.connect(self.register_user)
+        buttons_layout.addWidget(signup_button)
+
+        signin_button = QPushButton("Sign In")
+        signin_button.clicked.connect(self.switch_to_signin)
+        buttons_layout.addWidget(signin_button)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(form_layout)
+        main_layout.addLayout(buttons_layout)
+        self.setLayout(main_layout)
+
+    def switch_to_signin(self):
+        self.done(0)  # Close the sign-up dialog with a rejection code 0
+
     def register_user(self):
         username = self.username.text()
         password = self.password.text()
-
-        # Hashes the entered password into hexadecimals
         hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-        # Connect to the MS Access database to insert new user data
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO-CAP-SIGN-UP.accdb;'
-            # Path to database for new user data information storage
-        )
-        conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO Users (Username, PasswordHash) VALUES (?, ?)', (username, hashed_password))
-        conn.commit()
-        conn.close()
+        # Add user to Google Sheets
+        add_user(username, hashed_password)
 
         # Successful data entry alert
         QMessageBox.information(self, "Success", "You have signed up successfully!")
         self.accept()
 
-    def switch_to_signin(self):
-        self.done(0)  # Close the sign-up dialog with a rejection code 0
 
-
+# ... [The rest of the classes remain unchanged] ...
 # Login Dialog Class
 class LoginDialog(QDialog):
     def __init__(self):
@@ -96,32 +163,18 @@ class LoginDialog(QDialog):
     def check_credentials(self):
         username = self.username.text()
         password = self.password.text()
-
-        # Hash the entered password
         hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-        # Connect to the MS Access database to check credentials
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO-CAP-SIGN-UP.accdb;'
-        )
-        conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM Users WHERE Username=? AND PasswordHash=?', (username, hashed_password))
-        result = cursor.fetchone()
-        conn.close()
-
-        # Credentials check
-        if result:
+        # Check credentials against Google Sheets
+        if find_user(username, hashed_password):
             self.accept()  # Closes the dialog box and continues
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password. Please try again.")
-            self.username.clear()               # Wrong data entry.
+            self.username.clear()
             self.password.clear()
 
 
 # ConfirmDialog Class
-# The dialog box for users to confirm data entry into the database.
 class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
         super().__init__(parent)
@@ -148,20 +201,27 @@ class ConfirmDialog(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
+        try:
+            sheet.append_row([first_name, middle_name, last_name, age])
+        except Exception as e:
+            print("An error occurred:", e)
+
 
 # BioDataApp Class
-# This is the main application class that specifies the data entry form for the application
 class BioDataApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+    # ... [The rest of the BioDataApp class remains unchanged] ...
 
     def initUI(self):
-        self.setWindowTitle('Bio-Data Collection Application')      # Title bar name
+        self.setWindowTitle('Bio-Data Collection Application')
+        self.setStyleSheet("QWidget { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color:"
+                           " white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
 
-        layout = QVBoxLayout()
+        form_layout = QFormLayout()
 
-        # Data Entry field creation
+        # Data Entry fields
         self.firstName = QLineEdit()
         self.firstName.setPlaceholderText("Enter first name")
         self.middleName = QLineEdit()
@@ -171,22 +231,19 @@ class BioDataApp(QWidget):
         self.age = QLineEdit()
         self.age.setPlaceholderText("Enter age")
 
-        layout.addWidget(QLabel("First Name:"))
-        layout.addWidget(self.firstName)
-        layout.addWidget(QLabel("Middle Name (Skip if none):"))
-        layout.addWidget(self.middleName)
-        layout.addWidget(QLabel("Last Name:"))
-        layout.addWidget(self.lastName)
-        layout.addWidget(QLabel("Age:"))
-        layout.addWidget(self.age)
+        form_layout.addRow("First Name:", self.firstName)
+        form_layout.addRow("Middle Name (Skip if none):", self.middleName)
+        form_layout.addRow("Last Name:", self.lastName)
+        form_layout.addRow("Age:", self.age)
 
-        # Submit button creation
+        # Submit button
         submitButton = QPushButton("Submit")
-        # noinspection PyUnresolvedReferences
         submitButton.clicked.connect(self.showConfirmDialog)
-        layout.addWidget(submitButton)
 
-        self.setLayout(layout)
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(form_layout)
+        main_layout.addWidget(submitButton, alignment=Qt.AlignCenter)
+        self.setLayout(main_layout)
 
     def showConfirmDialog(self):
         # Checks if age input is an integer
@@ -200,27 +257,15 @@ class BioDataApp(QWidget):
         if dialog.exec_():
             self.submitData()
 
-    # Function enters the data into the connection database file.
     def submitData(self):
         age = int(self.age.text())
-        print("First Name:", self.firstName.text())
-        print("Middle Name:", self.middleName.text())
-        print("Last Name:", self.lastName.text())
-        print("Age:", age)
+        first_name = self.firstName.text()
+        middle_name = self.middleName.text()
+        last_name = self.lastName.text()
 
-        # Connects to the MS Access database and inserts the data
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO_DATA.accdb;'
-        )
-        conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        cursor.execute('''
-                   INSERT INTO BIO_DATA (FirstName, MiddleName, LastName, Age)
-                   VALUES (?, ?, ?, ?)
-               ''', (self.firstName.text(), self.middleName.text(), self.lastName.text(), age))
-        conn.commit()
-        conn.close()
+        # Write data to Google Sheets
+        sheet = init_google_sheets1()
+        sheet.append_row([first_name, middle_name, last_name, age])
 
         # Show a SUCCESS message box when data is submitted
         QMessageBox.information(self, "Success", "Data submitted successfully!")
@@ -232,9 +277,10 @@ class BioDataApp(QWidget):
         self.age.clear()
 
 
+# ... [The rest of the code remains unchanged] ...
+
 if __name__ == '__main__':
     app = QApplication([])
-
     # Shows the sign-up dialog first
     signup = SignUpDialog()
     result = signup.exec_()
@@ -252,3 +298,5 @@ if __name__ == '__main__':
             ex = BioDataApp()
             ex.show()
             app.exec_()
+
+    # ... [The rest of the main block remains unchanged] ...
