@@ -3,17 +3,17 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QL
 import pyodbc
 import hashlib
 
-# Sign Up Dialog Class
 
-
+# SignUpDialog class creates a sign-up dialog box
 class SignUpDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Sign Up')
+        self.setWindowTitle('Sign Up')  # Dialog box title
         self.setModal(True)
 
         layout = QVBoxLayout()
 
+        # Username and password entry points.
         self.username = QLineEdit()
         self.username.setPlaceholderText("Enter username")
         self.password = QLineEdit()
@@ -25,6 +25,7 @@ class SignUpDialog(QDialog):
         layout.addWidget(QLabel("Password:"))
         layout.addWidget(self.password)
 
+        # Sign up button creation
         signup_button = QPushButton("Sign Up")
         signup_button.clicked.connect(self.register_user)
         layout.addWidget(signup_button)
@@ -36,17 +37,19 @@ class SignUpDialog(QDialog):
 
         self.setLayout(layout)
 
+    # Function for user sign-up information storage
     def register_user(self):
         username = self.username.text()
         password = self.password.text()
 
-        # Hash the entered password
+        # Hashes the entered password into hexadecimals
         hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-        # Connect to the MS Access database to insert new user
+        # Connect to the MS Access database to insert new user data
         conn_str = (
             r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=path_to_your_database.accdb;'  # Update the path to your database
+            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO-CAP-SIGN-UP.accdb;'
+            # Path to database for new user data information storage
         )
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
@@ -54,11 +57,12 @@ class SignUpDialog(QDialog):
         conn.commit()
         conn.close()
 
+        # Successful data entry alert
         QMessageBox.information(self, "Success", "You have signed up successfully!")
         self.accept()
 
     def switch_to_signin(self):
-        self.done(0)  # Close the sign-up dialog with a rejection code
+        self.done(0)  # Close the sign-up dialog with a rejection code 0
 
 
 # Login Dialog Class
@@ -70,6 +74,7 @@ class LoginDialog(QDialog):
 
         layout = QVBoxLayout()
 
+        # Login Data entry
         self.username = QLineEdit()
         self.username.setPlaceholderText("Enter username")
         self.password = QLineEdit()
@@ -81,6 +86,7 @@ class LoginDialog(QDialog):
         layout.addWidget(QLabel("Password:"))
         layout.addWidget(self.password)
 
+        # Login Button creation and credentials check
         login_button = QPushButton("Login")
         login_button.clicked.connect(self.check_credentials)
         layout.addWidget(login_button)
@@ -97,7 +103,7 @@ class LoginDialog(QDialog):
         # Connect to the MS Access database to check credentials
         conn_str = (
             r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-SIGN-UP.accdb;'  # Update the path to your database
+            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO-CAP-SIGN-UP.accdb;'
         )
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
@@ -105,17 +111,17 @@ class LoginDialog(QDialog):
         result = cursor.fetchone()
         conn.close()
 
+        # Credentials check
         if result:
-            self.accept()  # Close the dialog and continue
+            self.accept()  # Closes the dialog box and continues
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password. Please try again.")
-            self.username.clear()
+            self.username.clear()               # Wrong data entry.
             self.password.clear()
 
 
-# ... (same as before) ...
-
 # ConfirmDialog Class
+# The dialog box for users to confirm data entry into the database.
 class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
         super().__init__(parent)
@@ -128,32 +134,34 @@ class ConfirmDialog(QDialog):
         layout.addWidget(QLabel(f"Last Name: {last_name}"))
         layout.addWidget(QLabel(f"Age: {age}"))
 
+        # Confirm Button creation
         button_layout = QHBoxLayout()
         self.confirm_button = QPushButton("Confirm")
         self.confirm_button.clicked.connect(self.accept)
         button_layout.addWidget(self.confirm_button)
 
+        # Edit Button creation
         self.edit_button = QPushButton("Edit")
         self.edit_button.clicked.connect(self.reject)
         button_layout.addWidget(self.edit_button)
 
         layout.addLayout(button_layout)
         self.setLayout(layout)
-# ... (same as before) ...
+
 
 # BioDataApp Class
-
-
+# This is the main application class that specifies the data entry form for the application
 class BioDataApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Bio-Data Collection Application')
+        self.setWindowTitle('Bio-Data Collection Application')      # Title bar name
 
         layout = QVBoxLayout()
 
+        # Data Entry field creation
         self.firstName = QLineEdit()
         self.firstName.setPlaceholderText("Enter first name")
         self.middleName = QLineEdit()
@@ -172,6 +180,7 @@ class BioDataApp(QWidget):
         layout.addWidget(QLabel("Age:"))
         layout.addWidget(self.age)
 
+        # Submit button creation
         submitButton = QPushButton("Submit")
         # noinspection PyUnresolvedReferences
         submitButton.clicked.connect(self.showConfirmDialog)
@@ -180,7 +189,7 @@ class BioDataApp(QWidget):
         self.setLayout(layout)
 
     def showConfirmDialog(self):
-        # Check if age input is an integer
+        # Checks if age input is an integer
         try:
             age = int(self.age.text())
         except ValueError:
@@ -191,6 +200,7 @@ class BioDataApp(QWidget):
         if dialog.exec_():
             self.submitData()
 
+    # Function enters the data into the connection database file.
     def submitData(self):
         age = int(self.age.text())
         print("First Name:", self.firstName.text())
@@ -198,10 +208,10 @@ class BioDataApp(QWidget):
         print("Last Name:", self.lastName.text())
         print("Age:", age)
 
-        # Connect to the MS Access database and insert the data
+        # Connects to the MS Access database and inserts the data
         conn_str = (
             r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\Users\el_he\Desktop\BIO_DATA.accdb;'
+            r'DBQ=C:\Users\el_he\Desktop\BIO-CAP-DATABASE FILES\BIO_DATA.accdb;'
         )
         conn = pyodbc.connect(conn_str)
         cursor = conn.cursor()
@@ -211,7 +221,6 @@ class BioDataApp(QWidget):
                ''', (self.firstName.text(), self.middleName.text(), self.lastName.text(), age))
         conn.commit()
         conn.close()
-        # ... (database code remains the same)
 
         # Show a SUCCESS message box when data is submitted
         QMessageBox.information(self, "Success", "Data submitted successfully!")
@@ -222,18 +231,22 @@ class BioDataApp(QWidget):
         self.lastName.clear()
         self.age.clear()
 
-# ... (same as before) ...
-
 
 if __name__ == '__main__':
     app = QApplication([])
 
-    # Show the sign-up dialog first
+    # Shows the sign-up dialog first
     signup = SignUpDialog()
     result = signup.exec_()
 
     # If the user closes the sign-up dialog or clicks "Sign In", show the login dialog
     if result == QDialog.Rejected:
+        login = LoginDialog()
+        if login.exec_() == QDialog.Accepted:
+            ex = BioDataApp()
+            ex.show()
+            app.exec_()
+    else:
         login = LoginDialog()
         if login.exec_() == QDialog.Accepted:
             ex = BioDataApp()
