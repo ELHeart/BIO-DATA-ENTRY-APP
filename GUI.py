@@ -1,51 +1,74 @@
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog,
-    QHBoxLayout, QFormLayout
+    QHBoxLayout, QFormLayout, QMenuBar, QAction, QSplashScreen
 )
+from gspread.exceptions import APIError, SpreadsheetNotFound
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
-import hashlib
+from PyQt5.QtCore import (Qt, QTimer)
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
-# ... [The rest of the functions remain unchanged] ...
-# Function to initialize the Google Sheets connection
+import bcrypt
 
 
-def init_google_sheets():
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = (ServiceAccountCredentials.from_json_keyfile_name
-             (r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope))
-    # Update the path to your downloaded credentials
-    client = gspread.authorize(creds)
-    sheet = client.open('Credentials').sheet1  # Update with your Google Sheet name
-    return sheet
+# SplashScreen class
+class SplashScreen(QSplashScreen):
+    def __init__(self, pixmap, timeout):
+        super().__init__(pixmap)
+        self.timeout = timeout
+
+    def showSplashScreen(self):
+        self.show()
+        QTimer.singleShot(self.timeout, self.close)
 
 
-def init_google_sheets1():
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = (ServiceAccountCredentials.from_json_keyfile_name
-             (r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope))
-    # Update the path to your downloaded credentials
-    client = gspread.authorize(creds)
-    sheet = client.open('Bio-Data').sheet1  # Update with your Google Sheet name
-    return sheet
+# Function to initialize the Google Sheets connection for user signup and login
+def init_google_sheets(sheet_name):
+    try:
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope)
+        client = gspread.authorize(creds)
+        sheet = client.open(sheet_name).sheet1
+        return sheet
+    except APIError:
+        QMessageBox.critical(None, "API Error", "An error occurred with the Google Sheets API.")
+        return None
+    except SpreadsheetNotFound:
+        QMessageBox.critical(None, "Spreadsheet Error", "The specified spreadsheet was not found.")
+        return None
 
 
-# Function to find a user in the Google Sheet
-def find_user(username, hashed_password):
-    sheet = init_google_sheets()
+# Function to hash a password
+def hash_password(password):  # Reduced work factor
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt)
+
+
+# Function to check a hashed password
+def check_password(hashed_password, user_password):
+    return bcrypt.checkpw(user_password.encode('utf-8'), hashed_password)
+
+
+# Function to find a user login data in the Google Sheet
+def find_user(username, user_password):
+    sheet = init_google_sheets('Credentials')
+    if sheet is None:
+        return False
     users = sheet.get_all_records()
     for user in users:
-        if user['Username'] == username and user['PasswordHash'] == hashed_password:
-            return True
+        if user['Username'] == username:
+            stored_password = user['PasswordHash'].encode('utf-8')
+            if check_password(stored_password, user_password):
+                return True
     return False
 
 
-# Function to add a new user to the Google Sheet
+# Function to add a new user login data to the Google Sheet
 def add_user(username, hashed_password):
-    sheet = init_google_sheets()
-    sheet.append_row([username, hashed_password])
+    sheet = init_google_sheets('Credentials')
+    if sheet is not None:
+        # Decode the hashed password to a UTF-8 string before appending
+        sheet.append_row([username, hashed_password.decode('utf-8')])
 
 
 # SignUpDialog class creates a sign-up dialog box
@@ -81,8 +104,6 @@ class SignUpDialog(QDialog):
         layout.addWidget(signin_button)
 
         self.setLayout(layout)
-
-    # ... [The rest of the SignUpDialog class remains unchanged] ...
 
     def initUI(self):
         self.setWindowTitle('Sign Up')
@@ -124,7 +145,7 @@ class SignUpDialog(QDialog):
     def register_user(self):
         username = self.username.text()
         password = self.password.text()
-        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        hashed_password = hash_password(password)  # Use bcrypt to hash the password
 
         # Add user to Google Sheets
         add_user(username, hashed_password)
@@ -134,12 +155,11 @@ class SignUpDialog(QDialog):
         self.accept()
 
 
-# ... [The rest of the classes remain unchanged] ...
 # Login Dialog Class
 class LoginDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Login')
+        self.setWindowTitle('Login')  # Set window title
         self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setModal(True)
 
@@ -164,13 +184,13 @@ class LoginDialog(QDialog):
 
         self.setLayout(layout)
 
+    # Function checks login data from allows rentry
     def check_credentials(self):
         username = self.username.text()
         password = self.password.text()
-        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
         # Check credentials against Google Sheets
-        if find_user(username, hashed_password):
+        if find_user(username, password):
             self.accept()  # Closes the dialog box and continues
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password. Please try again.")
@@ -182,7 +202,7 @@ class LoginDialog(QDialog):
 class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
         super().__init__(parent)
-        self.setWindowTitle('Confirm Data')
+        self.setWindowTitle('Confirm Data')  # Set window title
         self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
 
         layout = QVBoxLayout()
@@ -206,27 +226,19 @@ class ConfirmDialog(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-        # Get the 'sheet' object by calling the 'init_google_sheets1' function
-        sheet = init_google_sheets1()
-        if sheet:  # Check if 'sheet' is not None
-            try:
-                sheet.append_row([first_name, middle_name, last_name, age])
-            except Exception as e:
-                print("An error occurred:", e)
-
 
 # BioDataApp Class
 class BioDataApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-    # ... [The rest of the BioDataApp class remains unchanged] ...
 
     def initUI(self):
-        self.setWindowTitle('Bio-Data Collection Application')
+        self.setWindowTitle('Bio-Data Collection Application')  # Set the window title
         self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
         self.setStyleSheet("QWidget { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color:"
-                           " white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
+                           " white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")  # Stylesheet for the
+        # window
 
         form_layout = QFormLayout()
 
@@ -254,6 +266,7 @@ class BioDataApp(QWidget):
         main_layout.addWidget(submitButton, alignment=Qt.AlignCenter)
         self.setLayout(main_layout)
 
+    # Function checks data type for age entry and brings up data confirmation dialog box
     def showConfirmDialog(self):
         # Checks if age input is an integer
         try:
@@ -266,6 +279,7 @@ class BioDataApp(QWidget):
         if dialog.exec_():
             self.submitData()
 
+    # Function writes data to Google Sheets
     def submitData(self):
         age = int(self.age.text())
         first_name = self.firstName.text()
@@ -273,7 +287,7 @@ class BioDataApp(QWidget):
         last_name = self.lastName.text()
 
         # Write data to Google Sheets
-        sheet = init_google_sheets1()
+        sheet = init_google_sheets('Bio-Data')
         sheet.append_row([first_name, middle_name, last_name, age])
 
         # Show a SUCCESS message box when data is submitted
@@ -286,10 +300,17 @@ class BioDataApp(QWidget):
         self.age.clear()
 
 
-# ... [The rest of the code remains unchanged] ...
-
 if __name__ == '__main__':
     app = QApplication([])
+    # Create and display the splash screen
+    splash_image = QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png').pixmap(640, 480)  # Replace with
+    # your image path and size
+    splash = SplashScreen(splash_image, 3000)  # 3000 milliseconds = 3 seconds
+    splash.showSplashScreen()
+
+    # Proceed with the rest of the program after the splash screen
+    app.processEvents()  # Ensure the splash screen is displayed properly
+
     # Shows the sign-up dialog first
     signup = SignUpDialog()
     result = signup.exec_()
@@ -307,5 +328,3 @@ if __name__ == '__main__':
             ex = BioDataApp()
             ex.show()
             app.exec_()
-
-    # ... [The rest of the main block remains unchanged] ...
