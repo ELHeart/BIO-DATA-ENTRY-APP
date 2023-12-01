@@ -2,12 +2,10 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QDialog,
     QHBoxLayout, QFormLayout, QMenuBar, QAction, QSplashScreen
 )
-from gspread.exceptions import APIError, SpreadsheetNotFound
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import (Qt, QTimer)
-import gspread
+import gspread, socket, bcrypt
 from oauth2client.service_account import ServiceAccountCredentials
-import bcrypt
 
 
 # SplashScreen class
@@ -21,21 +19,27 @@ class SplashScreen(QSplashScreen):
         QTimer.singleShot(self.timeout, self.close)
 
 
+def is_internet_available(host="8.8.8.8", port=53, timeout=3):
+    """
+    Check if there is an internet connection available to a specified host.
+    The default host is Google's primary DNS server.
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except socket.error:
+        return False
+
+
 # Function to initialize the Google Sheets connection
 def init_google_sheets(sheet_name):
-    try:
-        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
-            r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\bio-cap-c9841b6b39e2.json', scope)
-        client = gspread.authorize(creds)
-        sheet = client.open(sheet_name).sheet1
-        return sheet
-    except APIError:
-        QMessageBox.critical(None, "API Error", "An error occurred with the Google Sheets API.")
-        return None
-    except SpreadsheetNotFound:
-        QMessageBox.critical(None, "Spreadsheet Error", "The specified spreadsheet was not found.")
-        return None
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+       r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\bio-cap-c9841b6b39e2.json', scope)
+    client = gspread.authorize(creds)
+    sheet = client.open(sheet_name).sheet1
+    return sheet
 
 
 # Function to hash a password
@@ -69,6 +73,31 @@ def add_user(username, hashed_password):
     if sheet is not None:
         # Decode the hashed password to a UTF-8 string before appending
         sheet.append_row([username, hashed_password.decode('utf-8')])
+
+
+class ConnectionErrorDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Connection Error')
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        self.setModal(True)
+
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("No internet connection. Please check your network settings."))
+
+        # Retry button
+        retry_button = QPushButton("Retry")
+        retry_button.clicked.connect(self.retry_connection)
+        layout.addWidget(retry_button)
+
+        self.setLayout(layout)
+
+    def retry_connection(self):
+        if is_internet_available():
+            self.accept()  # Close the dialog if the internet is available
+        else:
+            QMessageBox.warning(self, "Connection Error", "Still no internet connection. Please check your "
+                                                          "network settings again.")
 
 
 # SignUpDialog class creates a sign-up dialog box
@@ -313,12 +342,15 @@ if __name__ == '__main__':
     app = QApplication([])
     # Create and display the splash screen
     splash_image = QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png').pixmap(640, 480)
-
     splash = SplashScreen(splash_image, 3000)  # 3000 milliseconds = 3 seconds
     splash.showSplashScreen()
-
-    # Proceed with the rest of the program after the splash screen
     app.processEvents()  # Ensure the splash screen is displayed properly
+
+    # Check for internet connection
+    if not is_internet_available():
+        connection_dialog = ConnectionErrorDialog()
+        if connection_dialog.exec_() == QDialog.Rejected:
+            sys.exit()  # Exit the application if there is no internet connection after retrying
 
     # Shows the sign-up dialog first
     signup = SignUpDialog()
