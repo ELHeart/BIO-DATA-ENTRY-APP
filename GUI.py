@@ -21,12 +21,12 @@ class SplashScreen(QSplashScreen):
         QTimer.singleShot(self.timeout, self.close)
 
 
-# Function to initialize the Google Sheets connection for user signup and login
+# Function to initialize the Google Sheets connection
 def init_google_sheets(sheet_name):
     try:
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
         creds = ServiceAccountCredentials.from_json_keyfile_name(
-            r'C:\Users\el_he\Desktop\bio-cap-c9841b6b39e2.json', scope)
+            r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\bio-cap-c9841b6b39e2.json', scope)
         client = gspread.authorize(creds)
         sheet = client.open(sheet_name).sheet1
         return sheet
@@ -76,7 +76,11 @@ class SignUpDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Sign Up')  # Dialog box title
-        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        # Set the window icon
+        self.setStyleSheet(
+            "QDialog { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color: white; } "
+            "QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
         self.setModal(True)
 
         layout = QVBoxLayout()
@@ -107,10 +111,9 @@ class SignUpDialog(QDialog):
 
     def initUI(self):
         self.setWindowTitle('Sign Up')
-        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        # Set the window icon
         self.setModal(True)
-        self.setStyleSheet("QDialog { background-color: #f2f2f2; } QPushButton { background-color:"
-                           " #4CAF50; color: white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
 
         form_layout = QFormLayout()
 
@@ -160,7 +163,11 @@ class LoginDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Login')  # Set window title
-        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        # Set the window icon
+        self.setStyleSheet(
+            "QDialog { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color: white; } "
+            "QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")
         self.setModal(True)
 
         layout = QVBoxLayout()
@@ -203,7 +210,8 @@ class ConfirmDialog(QDialog):
     def __init__(self, parent, first_name, middle_name, last_name, age):
         super().__init__(parent)
         self.setWindowTitle('Confirm Data')  # Set window title
-        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        # Set the window icon
 
         layout = QVBoxLayout()
 
@@ -235,7 +243,8 @@ class BioDataApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Bio-Data Collection Application')  # Set the window title
-        self.setWindowIcon(QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png'))  # Set the window icon
+        self.setWindowIcon(QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png'))
+        # Set the window icon
         self.setStyleSheet("QWidget { background-color: #f2f2f2; } QPushButton { background-color: #4CAF50; color:"
                            " white; } QLineEdit { padding: 5px; } QLabel { font-weight: bold; }")  # Stylesheet for the
         # window
@@ -303,8 +312,8 @@ class BioDataApp(QWidget):
 if __name__ == '__main__':
     app = QApplication([])
     # Create and display the splash screen
-    splash_image = QIcon(r'C:\Users\el_he\Downloads\Telegram Desktop\cc.png').pixmap(640, 480)  # Replace with
-    # your image path and size
+    splash_image = QIcon(r'C:\Users\el_he\PycharmProjects\BIO-DATA-ENTRY-APP\BCDA\cc.png').pixmap(640, 480)
+
     splash = SplashScreen(splash_image, 3000)  # 3000 milliseconds = 3 seconds
     splash.showSplashScreen()
 
